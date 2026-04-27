@@ -3,6 +3,8 @@ import { db } from '@/db'
 import { products, categories } from '@/db/schema'
 import { eq, desc } from 'drizzle-orm'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   const [cats, featured] = await Promise.all([
     db.select().from(categories).orderBy(categories.name),

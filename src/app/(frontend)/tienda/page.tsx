@@ -4,6 +4,7 @@ import { products, categories } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Tienda' }
 
 export default async function TiendaPage({
