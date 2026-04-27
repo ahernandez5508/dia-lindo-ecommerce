@@ -5,13 +5,12 @@ import { adminUsers } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import bcrypt from 'bcryptjs'
+import { authConfig } from './auth.config'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: DrizzleAdapter(db),
   session: { strategy: 'jwt' },
-  pages: {
-    signIn: '/admin/login',
-  },
   providers: [
     Credentials({
       credentials: {
