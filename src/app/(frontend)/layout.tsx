@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import Nav from '@/components/Nav'
+import { CartProvider } from '@/components/CartProvider'
 
 export const metadata: Metadata = {
   title: {
@@ -17,5 +19,12 @@ export const metadata: Metadata = {
 }
 
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-col min-h-full">{children}</div>
+  return (
+    <CartProvider>
+      <div className="flex flex-col min-h-full">
+        <Nav />
+        {children}
+      </div>
+    </CartProvider>
+  )
 }
