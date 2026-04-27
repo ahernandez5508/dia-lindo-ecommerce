@@ -16,10 +16,6 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="es-AR" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-crema text-carbon">{children}</body>
-    </html>
-  )
+export default function FrontendLayout({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col min-h-full">{children}</div>
 }
