@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { db } from '@/db'
 import { orders } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { mpPayment } from '@/lib/mercadopago'
+import { getMpPayment } from '@/lib/mercadopago'
 import { verifyMpSignature } from '@/lib/mp-webhook-verify'
 
 export const dynamic = 'force-dynamic'
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
   let payment: any
   try {
-    payment = await mpPayment.get({ id: dataId })
+    payment = await getMpPayment().get({ id: dataId })
   } catch (err) {
     console.error('[mp-webhook] payment.get failed', err)
     return new Response('upstream error', { status: 502 })

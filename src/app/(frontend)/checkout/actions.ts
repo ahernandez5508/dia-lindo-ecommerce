@@ -4,7 +4,7 @@ import { orders, orderItems } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { redirect } from 'next/navigation'
 import type { PaymentMethod } from '@/lib/payment-methods'
-import { mpPreference } from '@/lib/mercadopago'
+import { getMpPreference } from '@/lib/mercadopago'
 
 const VALID_PAYMENT_METHODS: PaymentMethod[] = ['mercadopago', 'transferencia', 'efectivo']
 
@@ -71,7 +71,7 @@ export async function createMpPreference(
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!
 
-  const result = await mpPreference.create({
+  const result = await getMpPreference().create({
     body: {
       external_reference: String(orderId),
       items: [{
