@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   const ok = verifyMpSignature({ signatureHeader, requestIdHeader, dataId, secret })
   if (!ok) return new Response('invalid signature', { status: 401 })
 
-  if (body.type !== 'payment') return new Response(null, { status: 200 })
+  if (body.type !== 'payment') return new Response(null, { status: 422 })
 
   let payment: any
   try {
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
   const newStatus = mapStatus(payment.status)
   const paymentIdStr = String(payment.id)
 
-  if (order.mpPaymentId === paymentIdStr && (newStatus === null || order.status === newStatus)) {
+  if (order.mpPaymentId === paymentIdStr) {
     return new Response(null, { status: 200 })
   }
 
