@@ -64,17 +64,11 @@ export default async function HomePage() {
               >
                 VER TIENDA
               </Link>
-              <Link
-                href="/tienda"
-                className="border border-carbon/20 text-carbon px-7 py-4 rounded-full text-xs font-semibold tracking-wider hover:border-terracota hover:text-terracota transition-all inline-block"
-              >
-                Ver todo
-              </Link>
             </div>
           </div>
 
           {/* Right: decorative SVG */}
-          <div className="hidden md:flex items-center justify-center">
+          <div className="hidden md:flex items-center justify-center animate-float">
             <svg
               width="400"
               height="360"

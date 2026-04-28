@@ -65,11 +65,6 @@ export default function Footer() {
             </p>
             <ul className="flex flex-col gap-2">
               <li>
-                <Link href="/tienda" className="text-sm text-white/50 hover:text-white transition-colors">
-                  Cómo comprar
-                </Link>
-              </li>
-              <li>
                 <span className="text-sm text-white/50">Solo retiro en persona</span>
               </li>
             </ul>
