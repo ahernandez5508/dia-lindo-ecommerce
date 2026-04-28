@@ -2,7 +2,7 @@ import Image from 'next/image'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-salmon/20 bg-crema px-6 py-10">
+    <footer className="border-t border-salmon/20 bg-amarillo/30 px-6 py-10">
       <div className="flex flex-col items-center gap-4 text-center">
         <Image
           src="/images/logo.webp"
@@ -15,7 +15,7 @@ export default function Footer() {
         <p
           aria-hidden="true"
           className="text-lg text-terracota"
-          style={{ fontFamily: 'var(--font-display)' }}
+          style={{ fontFamily: 'var(--font-display)', letterSpacing: 'var(--letter-spacing-brand)' }}
         >
           Día Lindo
         </p>

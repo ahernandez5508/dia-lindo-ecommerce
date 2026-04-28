@@ -8,6 +8,16 @@ type Props = {
 
 export default function ProductGallery({ images, alt }: Props) {
   const [activeIndex, setActiveIndex] = useState<number>(0)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+
+  const handleThumbClick = (i: number) => {
+    if (i === activeIndex) return
+    setIsTransitioning(true)
+    setTimeout(() => {
+      setActiveIndex(i)
+      setIsTransitioning(false)
+    }, 150)
+  }
 
   if (images.length === 0) {
     return (
@@ -25,7 +35,9 @@ export default function ProductGallery({ images, alt }: Props) {
         <img
           src={images[activeIndex]}
           alt={alt}
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover transition-opacity duration-200 ${
+            isTransitioning ? 'opacity-0' : 'opacity-100'
+          }`}
         />
       </div>
 
@@ -36,7 +48,7 @@ export default function ProductGallery({ images, alt }: Props) {
             <button
               key={i}
               type="button"
-              onClick={() => setActiveIndex(i)}
+              onClick={() => handleThumbClick(i)}
               aria-label={`Ver imagen ${i + 1} de ${alt}`}
               aria-current={i === activeIndex}
               className={`aspect-square rounded-lg overflow-hidden ring-2 transition ${

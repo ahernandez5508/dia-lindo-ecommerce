@@ -25,6 +25,7 @@ export default async function TiendaPage({
         price: products.price,
         images: products.images,
         customizable: products.customizable,
+        stock: products.stock,
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
@@ -79,18 +80,25 @@ export default async function TiendaPage({
           {rows.map(p => {
             const img = p.images ? (() => { try { return JSON.parse(p.images!)[0] } catch { return null } })() : null
             return (
-              <Link key={p.id} href={`/tienda/${p.slug}`} className="group hover:shadow-md transition-shadow">
-                <div className="relative aspect-square bg-salmon/20 rounded-xl mb-3 overflow-hidden">
-                  {p.customizable && <ProductBadge variant="custom" />}
-                  {img ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={img} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-carbon/20 text-xs">Sin imagen</div>
-                  )}
+              <Link key={p.id} href={`/tienda/${p.slug}`} className="group">
+                <div className="bg-crema border border-salmon/20 shadow-sm rounded-2xl p-3 hover:shadow-md transition-shadow">
+                  <div className="relative aspect-square bg-salmon/20 rounded-xl mb-3 overflow-hidden">
+                    {p.customizable && <ProductBadge variant="custom" />}
+                    {p.stock === 0 && (
+                      <span className="absolute top-2 right-2 z-10 bg-carbon/80 text-crema text-xs px-2 py-0.5 rounded-full">
+                        Sin stock
+                      </span>
+                    )}
+                    {img ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={img} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-carbon/20 text-xs">Sin imagen</div>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-carbon">{p.name}</p>
+                  <p className="text-base font-semibold text-terracota">${Number(p.price).toLocaleString('es-AR')}</p>
                 </div>
-                <p className="text-sm font-medium text-carbon">{p.name}</p>
-                <p className="text-sm text-terracota">${Number(p.price).toLocaleString('es-AR')}</p>
               </Link>
             )
           })}
