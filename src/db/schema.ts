@@ -49,6 +49,8 @@ export const orders = mysqlTable('orders', {
   paymentMethod: varchar('payment_method', { length: 20 }).notNull().default('transferencia'),
   total: decimal('total', { precision: 10, scale: 2 }).notNull(),
   notes: text('notes'),
+  mpPreferenceId: varchar('mp_preference_id', { length: 255 }),
+  mpPaymentId: varchar('mp_payment_id', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
 })
