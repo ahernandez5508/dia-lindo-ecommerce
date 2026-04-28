@@ -13,9 +13,8 @@ export const PAYMENT_METHODS: Record<
   transferencia: {
     label: 'Transferencia bancaria',
     short: 'Transferencia',
-    // TODO-OQ2: reemplazar con CBU/alias real cuando esté disponible
     instructions:
-      'Te enviaremos el CBU/alias por email para realizar la transferencia. Mandanos el comprobante por Instagram una vez realizada.',
+      'Te enviaremos el CBU/alias por Instagram DM para realizar la transferencia. Mandanos el comprobante una vez realizada.',
   },
   efectivo: {
     label: 'Efectivo',
