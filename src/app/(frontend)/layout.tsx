@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import Nav from '@/components/Nav'
+import Footer from '@/components/Footer'
 import { CartProvider } from '@/components/CartProvider'
 
 export const metadata: Metadata = {
@@ -21,9 +22,10 @@ export const metadata: Metadata = {
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
-      <div className="flex flex-col min-h-full">
+      <div className="flex flex-col min-h-screen">
         <Nav />
-        {children}
+        <main className="flex-1">{children}</main>
+        <Footer />
       </div>
     </CartProvider>
   )
