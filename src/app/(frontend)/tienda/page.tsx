@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { db } from '@/db'
 import { products, categories } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
@@ -11,9 +12,9 @@ export const metadata: Metadata = { title: 'Tienda' }
 export default async function TiendaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ categoria?: string }>
+  searchParams: Promise<{ categoria?: string; q?: string }>
 }) {
-  const { categoria } = await searchParams
+  const { categoria, q } = await searchParams
 
   const [cats, rows] = await Promise.all([
     db.select().from(categories).orderBy(categories.name),
@@ -37,22 +38,28 @@ export default async function TiendaPage({
       .orderBy(products.name),
   ])
 
+  const filtered = q
+    ? rows.filter(p => p.name.toLowerCase().includes(q.toLowerCase()))
+    : rows
+
   return (
     <main className="flex-1 px-6 py-10 max-w-5xl mx-auto w-full">
       <h1
         className="text-3xl text-carbon mb-8"
         style={{ fontFamily: 'var(--font-display)' }}
       >
-        Tienda
+        {q ? `Resultados para "${q}"` : 'Tienda'}
       </h1>
 
-      {/* Filtro de categorías */}
+      {/* Filtro de categorías — tab underline style */}
       {cats.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex gap-0 border-b border-salmon/20 overflow-x-auto mb-8">
           <Link
-            href="/tienda"
-            className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
-              !categoria ? 'bg-terracota text-crema' : 'bg-salmon/30 text-carbon/80 hover:bg-salmon/50'
+            href={q ? `/tienda?q=${encodeURIComponent(q)}` : '/tienda'}
+            className={`px-4 py-3 text-sm whitespace-nowrap border-b-2 transition-colors ${
+              !categoria
+                ? 'border-terracota text-terracota font-bold'
+                : 'border-transparent text-carbon/60 font-medium hover:text-terracota'
             }`}
           >
             Todo
@@ -60,11 +67,11 @@ export default async function TiendaPage({
           {cats.map(cat => (
             <Link
               key={cat.id}
-              href={`/tienda?categoria=${cat.slug}`}
-              className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
+              href={`/tienda?categoria=${cat.slug}${q ? `&q=${encodeURIComponent(q)}` : ''}`}
+              className={`px-4 py-3 text-sm whitespace-nowrap border-b-2 transition-colors ${
                 categoria === cat.slug
-                  ? 'bg-terracota text-crema'
-                  : 'bg-salmon/30 text-carbon/80 hover:bg-salmon/50'
+                  ? 'border-terracota text-terracota font-bold'
+                  : 'border-transparent text-carbon/60 font-medium hover:text-terracota'
               }`}
             >
               {cat.name}
@@ -73,16 +80,20 @@ export default async function TiendaPage({
         </div>
       )}
 
-      {rows.length === 0 ? (
-        <p className="text-carbon/50 text-sm">No hay productos en esta categoría.</p>
+      {filtered.length === 0 ? (
+        <p className="text-carbon/50 text-sm">
+          {q ? `No se encontraron productos para "${q}".` : 'No hay productos en esta categoría.'}
+        </p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {rows.map(p => {
-            const img = p.images ? (() => { try { return JSON.parse(p.images!)[0] } catch { return null } })() : null
+          {filtered.map(p => {
+            const img = p.images
+              ? (() => { try { return JSON.parse(p.images!)[0] } catch { return null } })()
+              : null
             return (
               <Link key={p.id} href={`/tienda/${p.slug}`} className="group">
-                <div className="bg-crema border border-salmon/20 shadow-sm rounded-2xl p-3 hover:shadow-md transition-shadow">
-                  <div className="relative aspect-square bg-salmon/20 rounded-xl mb-3 overflow-hidden">
+                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                  <div className="relative aspect-square bg-salmon/20 overflow-hidden">
                     {p.customizable && <ProductBadge variant="custom" />}
                     {p.stock === 0 && (
                       <span className="absolute top-2 right-2 z-10 bg-carbon/80 text-crema text-xs px-2 py-0.5 rounded-full">
@@ -90,14 +101,30 @@ export default async function TiendaPage({
                       </span>
                     )}
                     {img ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={img} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <Image
+                        src={img}
+                        alt={p.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-carbon/20 text-xs">Sin imagen</div>
                     )}
                   </div>
-                  <p className="text-sm font-medium text-carbon">{p.name}</p>
-                  <p className="text-base font-semibold text-terracota">${Number(p.price).toLocaleString('es-AR')}</p>
+                  <div className="p-4">
+                    <p className="font-display text-base font-semibold text-carbon leading-snug mb-3">
+                      {p.name}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xl font-bold text-terracota">
+                        ${Number(p.price).toLocaleString('es-AR')}
+                      </p>
+                      <span className="bg-carbon text-crema text-xs font-bold tracking-wider px-3 py-2 rounded-lg group-hover:bg-terracota transition-colors">
+                        Ver
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </Link>
             )
