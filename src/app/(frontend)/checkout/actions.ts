@@ -1,8 +1,10 @@
 'use server'
 import { db } from '@/db'
 import { orders, orderItems } from '@/db/schema'
+import { eq } from 'drizzle-orm'
 import { redirect } from 'next/navigation'
 import type { PaymentMethod } from '@/lib/payment-methods'
+import { mpPreference } from '@/lib/mercadopago'
 
 const VALID_PAYMENT_METHODS: PaymentMethod[] = ['mercadopago', 'transferencia', 'efectivo']
 
@@ -53,5 +55,55 @@ export async function createOrder(_: State, formData: FormData): Promise<State> 
     })),
   )
 
+  if (paymentMethod === 'mercadopago') {
+    redirect(`/checkout/pago/${inserted.id}`)
+  }
   redirect(`/checkout/confirmacion/${inserted.id}`)
+}
+
+export async function createMpPreference(
+  orderId: number
+): Promise<{ preferenceId: string } | { error: string }> {
+  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1)
+  if (!order) return { error: 'Pedido no encontrado' }
+  if (order.paymentMethod !== 'mercadopago') return { error: 'Método de pago inválido' }
+  if (order.mpPreferenceId) return { preferenceId: order.mpPreferenceId }
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!
+
+  const result = await mpPreference.create({
+    body: {
+      external_reference: String(orderId),
+      items: [{
+        id: String(orderId),
+        title: `Pedido Día Lindo #${orderId}`,
+        quantity: 1,
+        unit_price: Number(order.total),
+        currency_id: 'ARS',
+      }],
+      payer: {
+        name: order.customerName,
+        email: order.customerEmail,
+      },
+      payment_methods: {
+        installments: 1,
+      },
+      back_urls: {
+        success: `${baseUrl}/checkout/confirmacion/${orderId}?status=approved`,
+        failure: `${baseUrl}/checkout/confirmacion/${orderId}?status=rejected`,
+        pending: `${baseUrl}/checkout/confirmacion/${orderId}?status=pending`,
+      },
+      auto_return: 'approved',
+      notification_url: `${baseUrl}/api/mercadopago/webhook`,
+      statement_descriptor: 'DIA LINDO',
+    },
+  })
+
+  if (!result.id) return { error: 'No se pudo crear la preferencia de pago' }
+
+  await db.update(orders)
+    .set({ mpPreferenceId: result.id })
+    .where(eq(orders.id, orderId))
+
+  return { preferenceId: result.id }
 }

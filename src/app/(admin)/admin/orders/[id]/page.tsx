@@ -62,6 +62,18 @@ export default async function OrderDetailPage({
             <p className="text-gray-900">{order.notes}</p>
           </div>
         )}
+        {order.mpPaymentId && (
+          <div className="col-span-2">
+            <p className="text-gray-500">MP Payment ID</p>
+            <p className="font-medium text-gray-900 font-mono text-xs break-all">{order.mpPaymentId}</p>
+          </div>
+        )}
+        {order.mpPreferenceId && (
+          <div className="col-span-2">
+            <p className="text-gray-500">MP Preference ID</p>
+            <p className="font-medium text-gray-900 font-mono text-xs break-all">{order.mpPreferenceId}</p>
+          </div>
+        )}
       </div>
 
       <div className="mb-8">

@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",
+    "@mercadopago/sdk-react": "^1.0.7",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.43.1",
+    "mercadopago": "^2.12.0",
     "mysql2": "^3.14.1",
     "next": "15.4.11",
     "next-auth": "^5.0.0-beta.29",
