@@ -35,6 +35,7 @@ export const products = mysqlTable('products', {
   categoryId: int('category_id').references(() => categories.id),
   images: text('images'), // JSON array of URLs
   active: boolean('active').notNull().default(true),
+  customizable: boolean('customizable').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
 })
@@ -45,6 +46,7 @@ export const orders = mysqlTable('orders', {
   customerEmail: varchar('customer_email', { length: 255 }).notNull(),
   customerPhone: varchar('customer_phone', { length: 50 }),
   status: varchar('status', { length: 50 }).notNull().default('pending'),
+  paymentMethod: varchar('payment_method', { length: 20 }).notNull().default('transferencia'),
   total: decimal('total', { precision: 10, scale: 2 }).notNull(),
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow(),

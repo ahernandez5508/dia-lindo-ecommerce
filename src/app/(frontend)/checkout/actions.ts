@@ -2,6 +2,9 @@
 import { db } from '@/db'
 import { orders, orderItems } from '@/db/schema'
 import { redirect } from 'next/navigation'
+import type { PaymentMethod } from '@/lib/payment-methods'
+
+const VALID_PAYMENT_METHODS: PaymentMethod[] = ['mercadopago', 'transferencia', 'efectivo']
 
 type CartItem = { id: number; name: string; price: number; quantity: number }
 type State = { error?: string } | null
@@ -12,8 +15,12 @@ export async function createOrder(_: State, formData: FormData): Promise<State> 
   const phone = (formData.get('phone') as string)?.trim()
   const notes = (formData.get('notes') as string)?.trim()
   const cartJson = formData.get('cart') as string
+  const paymentMethod = formData.get('paymentMethod') as string
 
   if (!name || !email) return { error: 'Nombre y email son requeridos' }
+  if (!paymentMethod || !VALID_PAYMENT_METHODS.includes(paymentMethod as PaymentMethod)) {
+    return { error: 'Seleccioná un método de pago' }
+  }
 
   let cart: CartItem[]
   try {
@@ -33,6 +40,7 @@ export async function createOrder(_: State, formData: FormData): Promise<State> 
     notes: notes || null,
     total: total.toFixed(2),
     status: 'pending',
+    paymentMethod: paymentMethod as PaymentMethod,
   }).$returningId()
 
   await db.insert(orderItems).values(

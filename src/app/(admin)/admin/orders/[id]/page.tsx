@@ -3,14 +3,9 @@ import Link from 'next/link'
 import { db } from '@/db'
 import { orders, orderItems } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-
-const STATUS: Record<string, string> = {
-  pending: 'Pendiente',
-  confirmed: 'Confirmado',
-  shipped: 'Enviado',
-  delivered: 'Entregado',
-  cancelled: 'Cancelado',
-}
+import StatusForm from '@/components/StatusForm'
+import { PAYMENT_METHODS } from '@/lib/payment-methods'
+import type { PaymentMethod } from '@/lib/payment-methods'
 
 export default async function OrderDetailPage({
   params,
@@ -26,6 +21,8 @@ export default async function OrderDetailPage({
   ])
 
   if (!order) notFound()
+
+  const paymentLabel = PAYMENT_METHODS[order.paymentMethod as PaymentMethod]?.label ?? order.paymentMethod
 
   return (
     <div>
@@ -52,8 +49,8 @@ export default async function OrderDetailPage({
           </div>
         )}
         <div>
-          <p className="text-gray-500">Estado</p>
-          <p className="font-medium text-gray-900">{STATUS[order.status] ?? order.status}</p>
+          <p className="text-gray-500">Método de pago</p>
+          <p className="font-medium text-gray-900">{paymentLabel}</p>
         </div>
         <div>
           <p className="text-gray-500">Total</p>
@@ -65,6 +62,10 @@ export default async function OrderDetailPage({
             <p className="text-gray-900">{order.notes}</p>
           </div>
         )}
+      </div>
+
+      <div className="mb-8">
+        <StatusForm orderId={order.id} currentStatus={order.status} />
       </div>
 
       {items.length > 0 && (

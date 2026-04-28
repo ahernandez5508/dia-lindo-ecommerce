@@ -11,6 +11,7 @@ type ProductValues = {
   stock: number
   categoryId: number | null
   active: boolean
+  customizable: boolean
   images: string | null
 }
 
@@ -128,6 +129,19 @@ export default function ProductForm({ action, categories, defaultValues }: Props
         />
         <label htmlFor="active" className="text-sm text-gray-700">
           Producto activo
+        </label>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          name="customizable"
+          type="checkbox"
+          id="customizable"
+          defaultChecked={defaultValues?.customizable ?? false}
+          className="rounded"
+        />
+        <label htmlFor="customizable" className="text-sm text-gray-700">
+          Producto personalizable (consulta por Instagram)
         </label>
       </div>
 

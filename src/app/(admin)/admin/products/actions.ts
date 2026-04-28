@@ -25,6 +25,7 @@ export async function createProduct(_: State, formData: FormData): Promise<State
   const stock = formData.get('stock') as string
   const categoryId = formData.get('categoryId') as string
   const active = formData.get('active') === 'on'
+  const customizable = formData.get('customizable') === 'on'
   const imageUrl = (formData.get('imageUrl') as string)?.trim()
 
   if (!name) return { error: 'El nombre es requerido' }
@@ -40,6 +41,7 @@ export async function createProduct(_: State, formData: FormData): Promise<State
       categoryId: categoryId ? Number(categoryId) : null,
       images: imageUrl ? JSON.stringify([imageUrl]) : null,
       active,
+      customizable,
     })
   } catch {
     return { error: 'Ya existe un producto con ese nombre' }
@@ -54,6 +56,7 @@ export async function updateProduct(id: number, _: State, formData: FormData): P
   const stock = formData.get('stock') as string
   const categoryId = formData.get('categoryId') as string
   const active = formData.get('active') === 'on'
+  const customizable = formData.get('customizable') === 'on'
   const imageUrl = (formData.get('imageUrl') as string)?.trim()
 
   if (!name) return { error: 'El nombre es requerido' }
@@ -71,6 +74,7 @@ export async function updateProduct(id: number, _: State, formData: FormData): P
         categoryId: categoryId ? Number(categoryId) : null,
         images: imageUrl ? JSON.stringify([imageUrl]) : null,
         active,
+        customizable,
       })
       .where(eq(products.id, id))
   } catch {

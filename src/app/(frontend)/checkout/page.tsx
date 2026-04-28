@@ -4,6 +4,8 @@ import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createOrder } from './actions'
 import Link from 'next/link'
+import PaymentMethodRadio from '@/components/PaymentMethodRadio'
+import PickupNotice from '@/components/PickupNotice'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -36,11 +38,14 @@ export default function CheckoutPage() {
   return (
     <main className="flex-1 px-6 py-10 max-w-3xl mx-auto w-full">
       <h1
-        className="text-3xl text-carbon mb-8"
+        className="text-3xl text-carbon mb-4"
         style={{ fontFamily: 'var(--font-display)' }}
       >
         Finalizar pedido
       </h1>
+      <div className="mb-8">
+        <PickupNotice />
+      </div>
 
       <div className="grid md:grid-cols-2 gap-10">
         {/* Formulario */}
@@ -82,6 +87,8 @@ export default function CheckoutPage() {
               className="w-full border border-salmon/50 rounded-lg px-3 py-2 text-sm bg-crema focus:outline-none focus:ring-2 focus:ring-terracota/30 resize-none"
             />
           </div>
+
+          <PaymentMethodRadio />
 
           {state?.error && <p className="text-red-600 text-sm">{state.error}</p>}
           <SubmitButton />

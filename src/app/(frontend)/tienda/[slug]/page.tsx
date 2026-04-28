@@ -3,6 +3,7 @@ import { db } from '@/db'
 import { products, categories } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import AddToCart from '@/components/AddToCart'
+import InstagramCTA from '@/components/InstagramCTA'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({
@@ -32,6 +33,7 @@ export default async function ProductPage({
       stock: products.stock,
       images: products.images,
       active: products.active,
+      customizable: products.customizable,
       categoryName: categories.name,
     })
     .from(products)
@@ -77,7 +79,9 @@ export default async function ProductPage({
           <p className="text-xs text-carbon/40">
             {row.stock > 0 ? `${row.stock} disponibles` : 'Sin stock'}
           </p>
-          {row.stock > 0 ? (
+          {row.customizable ? (
+            <InstagramCTA productName={row.name} />
+          ) : row.stock > 0 ? (
             <AddToCart product={{ id: row.id, name: row.name, price, image: imgs[0] }} />
           ) : (
             <button disabled className="w-full bg-carbon/10 text-carbon/40 py-3 rounded-full text-sm cursor-not-allowed">

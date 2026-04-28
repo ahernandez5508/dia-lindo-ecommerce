@@ -8,6 +8,13 @@
       "when": 1777325755947,
       "tag": "0000_spooky_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1777333227339,
+      "tag": "0001_wealthy_quentin_quire",
+      "breakpoints": true
     }
   ]
 }

@@ -12,6 +12,7 @@ export default async function ProductsPage() {
       price: products.price,
       stock: products.stock,
       active: products.active,
+      customizable: products.customizable,
       categoryName: categories.name,
     })
     .from(products)
@@ -47,7 +48,14 @@ export default async function ProductsPage() {
           <tbody>
             {rows.map((p) => (
               <tr key={p.id} className="border-b border-gray-100">
-                <td className="py-3 text-gray-900">{p.name}</td>
+                <td className="py-3 text-gray-900">
+                  <span>{p.name}</span>
+                  {p.customizable && (
+                    <span className="ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-sage/20 text-sage">
+                      Personalizable
+                    </span>
+                  )}
+                </td>
                 <td className="py-3 text-gray-700">${Number(p.price).toFixed(2)}</td>
                 <td className="py-3 text-gray-700">{p.stock}</td>
                 <td className="py-3 text-gray-500">{p.categoryName ?? '—'}</td>
