@@ -18,6 +18,18 @@ function toSlug(name: string) {
     .replace(/^-|-$/g, '')
 }
 
+function readImageUrls(formData: FormData): string[] {
+  return Array.from(formData.entries())
+    .filter(([k]) => /^imageUrl_\d+$/.test(k))
+    .sort(([a], [b]) => {
+      const ia = Number(a.split('_')[1])
+      const ib = Number(b.split('_')[1])
+      return ia - ib
+    })
+    .map(([, v]) => String(v).trim())
+    .filter(Boolean)
+}
+
 export async function createProduct(_: State, formData: FormData): Promise<State> {
   const name = (formData.get('name') as string)?.trim()
   const description = (formData.get('description') as string)?.trim()
@@ -26,7 +38,7 @@ export async function createProduct(_: State, formData: FormData): Promise<State
   const categoryId = formData.get('categoryId') as string
   const active = formData.get('active') === 'on'
   const customizable = formData.get('customizable') === 'on'
-  const imageUrl = (formData.get('imageUrl') as string)?.trim()
+  const urls = readImageUrls(formData)
 
   if (!name) return { error: 'El nombre es requerido' }
   if (!price || isNaN(Number(price))) return { error: 'El precio es inválido' }
@@ -39,7 +51,7 @@ export async function createProduct(_: State, formData: FormData): Promise<State
       price,
       stock: Number(stock) || 0,
       categoryId: categoryId ? Number(categoryId) : null,
-      images: imageUrl ? JSON.stringify([imageUrl]) : null,
+      images: urls.length > 0 ? JSON.stringify(urls) : null,
       active,
       customizable,
     })
@@ -57,7 +69,7 @@ export async function updateProduct(id: number, _: State, formData: FormData): P
   const categoryId = formData.get('categoryId') as string
   const active = formData.get('active') === 'on'
   const customizable = formData.get('customizable') === 'on'
-  const imageUrl = (formData.get('imageUrl') as string)?.trim()
+  const urls = readImageUrls(formData)
 
   if (!name) return { error: 'El nombre es requerido' }
   if (!price || isNaN(Number(price))) return { error: 'El precio es inválido' }
@@ -72,7 +84,7 @@ export async function updateProduct(id: number, _: State, formData: FormData): P
         price,
         stock: Number(stock) || 0,
         categoryId: categoryId ? Number(categoryId) : null,
-        images: imageUrl ? JSON.stringify([imageUrl]) : null,
+        images: urls.length > 0 ? JSON.stringify(urls) : null,
         active,
         customizable,
       })

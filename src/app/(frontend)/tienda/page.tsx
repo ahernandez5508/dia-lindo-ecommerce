@@ -3,6 +3,7 @@ import { db } from '@/db'
 import { products, categories } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import type { Metadata } from 'next'
+import ProductBadge from '@/components/ProductBadge'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Tienda' }
@@ -23,6 +24,7 @@ export default async function TiendaPage({
         slug: products.slug,
         price: products.price,
         images: products.images,
+        customizable: products.customizable,
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
@@ -77,8 +79,9 @@ export default async function TiendaPage({
           {rows.map(p => {
             const img = p.images ? (() => { try { return JSON.parse(p.images!)[0] } catch { return null } })() : null
             return (
-              <Link key={p.id} href={`/tienda/${p.slug}`} className="group">
-                <div className="aspect-square bg-salmon/20 rounded-xl mb-3 overflow-hidden">
+              <Link key={p.id} href={`/tienda/${p.slug}`} className="group hover:shadow-md transition-shadow">
+                <div className="relative aspect-square bg-salmon/20 rounded-xl mb-3 overflow-hidden">
+                  {p.customizable && <ProductBadge variant="custom" />}
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={img} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />

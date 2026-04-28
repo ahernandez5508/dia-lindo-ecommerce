@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 
@@ -37,12 +38,21 @@ interface Props {
 export default function ProductForm({ action, categories, defaultValues }: Props) {
   const [state, formAction] = useActionState(action, null)
 
-  let imageUrl = ''
-  if (defaultValues?.images) {
+  const [urls, setUrls] = useState<string[]>(() => {
+    if (!defaultValues?.images) return ['']
     try {
-      imageUrl = JSON.parse(defaultValues.images)[0] ?? ''
-    } catch {}
-  }
+      const parsed = JSON.parse(defaultValues.images)
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : ['']
+    } catch {
+      return ['']
+    }
+  })
+
+  const updateUrl = (i: number, value: string) =>
+    setUrls(prev => prev.map((u, idx) => (idx === i ? value : u)))
+  const addUrl = () => setUrls(prev => [...prev, ''])
+  const removeUrl = (i: number) =>
+    setUrls(prev => prev.length === 1 ? [''] : prev.filter((_, idx) => idx !== i))
 
   return (
     <form action={formAction} className="space-y-4 max-w-lg">
@@ -109,14 +119,37 @@ export default function ProductForm({ action, categories, defaultValues }: Props
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">URL de imagen</label>
-        <input
-          name="imageUrl"
-          type="url"
-          defaultValue={imageUrl}
-          placeholder="https://..."
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
-        />
+        <label className="block text-sm font-medium text-carbon mb-1">
+          Imágenes (URL)
+          <span className="text-xs text-carbon/60 ml-1">La primera será la imagen principal</span>
+        </label>
+        {urls.map((url, i) => (
+          <div key={i} className="flex gap-2 mb-2">
+            <input
+              type="url"
+              name={`imageUrl_${i}`}
+              value={url}
+              onChange={e => updateUrl(i, e.target.value)}
+              placeholder="https://..."
+              className="flex-1 border border-salmon/30 rounded-lg px-3 py-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => removeUrl(i)}
+              disabled={urls.length === 1}
+              className="px-3 py-2 text-sm border border-salmon/30 rounded-lg disabled:opacity-40 hover:bg-salmon/10 transition"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={addUrl}
+          className="text-sm border border-dashed border-salmon/50 rounded-lg px-4 py-2 hover:bg-salmon/10 transition w-full"
+        >
+          + Agregar imagen
+        </button>
       </div>
 
       <div className="flex items-center gap-2">

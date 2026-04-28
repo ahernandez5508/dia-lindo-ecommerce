@@ -4,6 +4,7 @@ import { products, categories } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import AddToCart from '@/components/AddToCart'
 import InstagramCTA from '@/components/InstagramCTA'
+import ProductGallery from '@/components/ProductGallery'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({
@@ -50,14 +51,7 @@ export default async function ProductPage({
     <main className="flex-1 px-6 py-10 max-w-4xl mx-auto w-full">
       <div className="grid md:grid-cols-2 gap-10">
         {/* Imagen */}
-        <div className="aspect-square bg-salmon/20 rounded-2xl overflow-hidden">
-          {imgs[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imgs[0]} alt={row.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-carbon/20">Sin imagen</div>
-          )}
-        </div>
+        <ProductGallery images={imgs} alt={row.name} />
 
         {/* Info */}
         <div className="flex flex-col gap-4">

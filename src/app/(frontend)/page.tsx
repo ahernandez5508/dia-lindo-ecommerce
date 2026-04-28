@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { db } from '@/db'
 import { products, categories } from '@/db/schema'
 import { eq, desc } from 'drizzle-orm'
@@ -15,12 +16,14 @@ export default async function HomePage() {
     <main className="flex-1">
       {/* Hero */}
       <section className="px-6 py-24 text-center">
-        <h1
-          className="text-5xl md:text-7xl text-terracota mb-4"
-          style={{ fontFamily: 'var(--font-display)', letterSpacing: 'var(--letter-spacing-brand)' }}
-        >
-          Día Lindo
-        </h1>
+        <Image
+          src="/images/logo.webp"
+          alt="Día Lindo"
+          width={180}
+          height={180}
+          priority
+          className="mx-auto mb-4"
+        />
         <p className="text-carbon/60 max-w-xs mx-auto mb-10 text-sm">
           Papelería creativa para momentos especiales
         </p>
