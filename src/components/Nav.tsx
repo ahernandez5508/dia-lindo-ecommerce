@@ -32,8 +32,8 @@ export default function Nav() {
           <Image
             src="/images/logo.webp"
             alt="Día Lindo"
-            width={48}
-            height={48}
+            width={72}
+            height={72}
             className="object-contain"
             priority
           />
