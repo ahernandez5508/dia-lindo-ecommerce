@@ -15,6 +15,13 @@
       "when": 1777333227339,
       "tag": "0001_wealthy_quentin_quire",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1777378281211,
+      "tag": "0002_broad_catseye",
+      "breakpoints": true
     }
   ]
 }
