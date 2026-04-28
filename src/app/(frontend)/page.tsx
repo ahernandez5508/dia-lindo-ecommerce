@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 const FEATURES = [
   { icon: '✦', text: 'Diseño original' },
   { icon: '♥', text: 'Hecho con amor' },
-  { icon: '★', text: 'Envío a todo el país' },
+  { icon: '★', text: 'Retiro en persona' },
   { icon: '✦', text: 'Alta calidad' },
 ]
 
@@ -65,10 +65,10 @@ export default async function HomePage() {
                 VER TIENDA
               </Link>
               <Link
-                href="/tienda?categoria=kits"
+                href="/tienda"
                 className="border border-carbon/20 text-carbon px-7 py-4 rounded-full text-xs font-semibold tracking-wider hover:border-terracota hover:text-terracota transition-all inline-block"
               >
-                Ver kits
+                Ver todo
               </Link>
             </div>
           </div>

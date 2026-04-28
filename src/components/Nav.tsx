@@ -67,7 +67,7 @@ export default function Nav() {
         <nav className="flex items-center gap-6">
           <Link
             href="/tienda"
-            className="uppercase text-xs tracking-widest text-carbon/50 hover:text-terracota transition-colors hidden sm:block"
+            className="uppercase text-xs tracking-widest text-carbon/50 hover:text-terracota transition-colors"
           >
             Tienda
           </Link>
