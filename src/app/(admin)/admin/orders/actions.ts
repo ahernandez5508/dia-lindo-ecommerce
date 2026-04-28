@@ -22,5 +22,6 @@ export async function updateOrderStatus(
 
   await db.update(orders).set({ status }).where(eq(orders.id, id))
   revalidatePath(`/admin/orders/${id}`)
+  revalidatePath('/admin/orders')
   return null
 }

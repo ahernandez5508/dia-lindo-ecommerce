@@ -8,7 +8,7 @@ export const PAYMENT_METHODS: Record<
     label: 'MercadoPago',
     short: 'MercadoPago',
     instructions:
-      'Vas a poder pagar por MercadoPago al confirmar el pedido. Te enviaremos el link de pago por email.',
+      'Te vamos a enviar el link de pago de MercadoPago por Instagram DM para que puedas completar tu compra.',
   },
   transferencia: {
     label: 'Transferencia bancaria',
