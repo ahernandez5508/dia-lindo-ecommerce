@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import { redirect } from 'next/navigation'
 import type { PaymentMethod } from '@/lib/payment-methods'
 import { getMpPreference } from '@/lib/mercadopago'
+import { sendOrderEmail } from '@/lib/order-email'
 
 const VALID_PAYMENT_METHODS: PaymentMethod[] = ['mercadopago', 'transferencia', 'efectivo']
 
@@ -34,6 +35,7 @@ export async function createOrder(_: State, formData: FormData): Promise<State> 
   if (!cart.length) return { error: 'El carrito está vacío' }
 
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  const trackingToken = crypto.randomUUID()
 
   const [inserted] = await db.insert(orders).values({
     customerName: name,
@@ -43,6 +45,7 @@ export async function createOrder(_: State, formData: FormData): Promise<State> 
     total: total.toFixed(2),
     status: 'pending',
     paymentMethod: paymentMethod as PaymentMethod,
+    trackingToken,
   }).$returningId()
 
   await db.insert(orderItems).values(
@@ -54,6 +57,14 @@ export async function createOrder(_: State, formData: FormData): Promise<State> 
       unitPrice: item.price.toFixed(2),
     })),
   )
+
+  // fire-and-forget — never blocks redirect
+  sendOrderEmail({
+    orderId: inserted.id,
+    trackingToken,
+    order: { customerName: name, customerEmail: email, paymentMethod: paymentMethod as PaymentMethod, total },
+    cart,
+  }).catch(err => console.error('[email] send failed', err))
 
   if (paymentMethod === 'mercadopago') {
     redirect(`/checkout/pago/${inserted.id}`)

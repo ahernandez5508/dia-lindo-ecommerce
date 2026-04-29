@@ -51,6 +51,7 @@ export const orders = mysqlTable('orders', {
   notes: text('notes'),
   mpPreferenceId: varchar('mp_preference_id', { length: 255 }),
   mpPaymentId: varchar('mp_payment_id', { length: 255 }),
+  trackingToken: varchar('tracking_token', { length: 36 }).notNull().unique(),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
 })
