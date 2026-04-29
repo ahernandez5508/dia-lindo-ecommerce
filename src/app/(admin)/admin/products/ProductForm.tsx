@@ -118,6 +118,8 @@ export default function ProductForm({ action, categories, defaultValues }: Props
     setSubmitting(true)
     setUploadError(null)
 
+    let finalFormData: FormData | null = null
+
     try {
       type PendingItem = Extract<ImageItem, { type: 'pending' }>
       const pendingItems = items.filter((item): item is PendingItem => item.type === 'pending')
@@ -140,13 +142,16 @@ export default function ProductForm({ action, categories, defaultValues }: Props
         return uploadResults[pendingIdx++]?.url ?? null
       }).filter((u): u is string => u !== null)
 
-      const formData = new FormData(e.currentTarget)
-      formData.set('images', JSON.stringify(finalUrls))
-      formAction(formData)
+      finalFormData = new FormData(e.currentTarget)
+      finalFormData.set('images', JSON.stringify(finalUrls))
     } catch {
       setUploadError('Error inesperado. Intentá de nuevo.')
       setSubmitting(false)
+      return
     }
+
+    // Fuera del try-catch: redirect() de Next.js lanza internamente y no debe ser atrapado
+    formAction(finalFormData)
   }
 
   const displayUrl = (item: ImageItem) =>
