@@ -3,6 +3,11 @@ import { useRef, useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useUploadThing } from '@/lib/uploadthing'
+import { deleteUploadthingFile } from './actions'
+
+type ImageItem =
+  | { type: 'uploaded'; url: string }
+  | { type: 'pending'; file: File; preview: string }
 
 type State = { error?: string } | null
 type Category = { id: number; name: string }
@@ -39,42 +44,59 @@ interface Props {
 export default function ProductForm({ action, categories, defaultValues }: Props) {
   const [state, formAction] = useActionState(action, null)
 
-  const [urls, setUrls] = useState<string[]>(() => {
+  const [items, setItems] = useState<ImageItem[]>(() => {
     if (!defaultValues?.images) return []
     try {
       const parsed = JSON.parse(defaultValues.images)
-      return Array.isArray(parsed) && parsed.length > 0 ? parsed : []
+      if (!Array.isArray(parsed)) return []
+      return parsed
+        .filter((u: unknown): u is string => typeof u === 'string' && u.length > 0)
+        .map((url: string) => ({ type: 'uploaded' as const, url }))
     } catch {
       return []
     }
   })
 
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { startUpload, isUploading } = useUploadThing('productImage', {
-    onClientUploadComplete: (res) => {
-      setUrls(prev => [...prev, ...res.map(f => f.url)])
-      setUploadError(null)
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    },
     onUploadError: (err) => {
       const msg = err.message?.toLowerCase() ?? ''
       if (msg.includes('size') || msg.includes('large') || msg.includes('limit')) {
-        setUploadError('La imagen supera el tamaño máximo permitido (16 MB). Reducí el tamaño y volvé a intentarlo.')
+        setUploadError('Una imagen supera el tamaño máximo de 16 MB.')
       } else {
         setUploadError('No se pudo subir la imagen. Intentá de nuevo.')
       }
-      if (fileInputRef.current) fileInputRef.current.value = ''
     },
   })
 
-  const removeUrl = (i: number) =>
-    setUrls(prev => prev.filter((_, idx) => idx !== i))
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
+    const newItems: ImageItem[] = files.map(file => ({
+      type: 'pending',
+      file,
+      preview: URL.createObjectURL(file),
+    }))
+    setItems(prev => [...prev, ...newItems])
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const removeItem = (i: number) => {
+    const item = items[i]
+    if (item.type === 'uploaded') {
+      deleteUploadthingFile(item.url)
+    } else {
+      URL.revokeObjectURL(item.preview)
+    }
+    setItems(prev => prev.filter((_, idx) => idx !== i))
+  }
 
   const moveUp = (i: number) => {
     if (i === 0) return
-    setUrls(prev => {
+    setItems(prev => {
       const next = [...prev]
       ;[next[i - 1], next[i]] = [next[i], next[i - 1]]
       return next
@@ -82,7 +104,7 @@ export default function ProductForm({ action, categories, defaultValues }: Props
   }
 
   const moveDown = (i: number) => {
-    setUrls(prev => {
+    setItems(prev => {
       if (i === prev.length - 1) return prev
       const next = [...prev]
       ;[next[i], next[i + 1]] = [next[i + 1], next[i]]
@@ -90,8 +112,50 @@ export default function ProductForm({ action, categories, defaultValues }: Props
     })
   }
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (submitting || isUploading) return
+    setSubmitting(true)
+    setUploadError(null)
+
+    try {
+      type PendingItem = Extract<ImageItem, { type: 'pending' }>
+      const pendingItems = items.filter((item): item is PendingItem => item.type === 'pending')
+      let uploadResults: { url: string }[] = []
+
+      if (pendingItems.length > 0) {
+        const res = await startUpload(pendingItems.map(i => i.file))
+        if (!res || res.length !== pendingItems.length) {
+          setUploadError('Error al subir las imágenes. Intentá de nuevo.')
+          setSubmitting(false)
+          return
+        }
+        uploadResults = res
+        pendingItems.forEach(item => URL.revokeObjectURL(item.preview))
+      }
+
+      let pendingIdx = 0
+      const finalUrls = items.map(item => {
+        if (item.type === 'uploaded') return item.url
+        return uploadResults[pendingIdx++]?.url ?? null
+      }).filter((u): u is string => u !== null)
+
+      const formData = new FormData(e.currentTarget)
+      formData.set('images', JSON.stringify(finalUrls))
+      formAction(formData)
+    } catch {
+      setUploadError('Error inesperado. Intentá de nuevo.')
+      setSubmitting(false)
+    }
+  }
+
+  const displayUrl = (item: ImageItem) =>
+    item.type === 'uploaded' ? item.url : item.preview
+
+  const busy = isUploading || submitting
+
   return (
-    <form action={formAction} className="space-y-4 max-w-lg">
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
         <input
@@ -160,17 +224,24 @@ export default function ProductForm({ action, categories, defaultValues }: Props
           <span className="text-xs text-carbon/60 ml-1">La primera será la imagen principal</span>
         </label>
 
-        {urls.length > 0 && (
+        {items.length > 0 && (
           <ul className="space-y-2 mb-3">
-            {urls.map((url, i) => (
-              <li key={url + i} className="flex items-center gap-2 border border-salmon/20 rounded-lg p-2">
+            {items.map((item, i) => (
+              <li key={i} className="flex items-center gap-2 border border-salmon/20 rounded-lg p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={url}
+                  src={displayUrl(item)}
                   alt={`Imagen ${i + 1}`}
                   className="w-14 h-14 object-cover rounded"
                 />
-                <span className="flex-1 text-xs text-gray-500 truncate">{url}</span>
+                <span className="flex-1 text-xs text-gray-500 truncate">
+                  {item.type === 'pending' ? item.file.name : item.url}
+                </span>
+                {item.type === 'pending' && (
+                  <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                    pendiente
+                  </span>
+                )}
                 <div className="flex flex-col gap-1">
                   <button
                     type="button"
@@ -184,7 +255,7 @@ export default function ProductForm({ action, categories, defaultValues }: Props
                   <button
                     type="button"
                     onClick={() => moveDown(i)}
-                    disabled={i === urls.length - 1}
+                    disabled={i === items.length - 1}
                     className="px-2 py-0.5 text-xs border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-30"
                     aria-label="Mover abajo"
                   >
@@ -193,7 +264,7 @@ export default function ProductForm({ action, categories, defaultValues }: Props
                 </div>
                 <button
                   type="button"
-                  onClick={() => removeUrl(i)}
+                  onClick={() => removeItem(i)}
                   className="px-2 py-1 text-sm border border-salmon/30 rounded-lg hover:bg-salmon/10 transition"
                   aria-label="Quitar imagen"
                 >
@@ -204,7 +275,7 @@ export default function ProductForm({ action, categories, defaultValues }: Props
           </ul>
         )}
 
-        <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg p-6 cursor-pointer transition ${isUploading ? 'border-gray-300 bg-gray-50 cursor-not-allowed' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}`}>
+        <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg p-6 cursor-pointer transition ${busy ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}`}>
           <span className="text-sm text-gray-500">
             {isUploading ? 'Subiendo...' : 'Hacé clic para seleccionar imágenes'}
           </span>
@@ -214,17 +285,16 @@ export default function ProductForm({ action, categories, defaultValues }: Props
             type="file"
             accept="image/*"
             multiple
-            disabled={isUploading}
+            disabled={busy}
             className="hidden"
-            onChange={(e) => {
-              const files = Array.from(e.target.files ?? [])
-              if (files.length > 0) startUpload(files)
-            }}
+            onChange={handleFileChange}
           />
         </label>
 
         {uploadError && (
-          <p className="mt-2 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">{uploadError}</p>
+          <p className="mt-2 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+            {uploadError}
+          </p>
         )}
       </div>
 
@@ -256,9 +326,9 @@ export default function ProductForm({ action, categories, defaultValues }: Props
 
       {state?.error && <p className="text-red-600 text-sm">{state.error}</p>}
 
-      <input type="hidden" name="images" value={JSON.stringify(urls)} />
+      <input type="hidden" name="images" value="[]" />
 
-      <SubmitButton disabled={isUploading} />
+      <SubmitButton disabled={busy} />
     </form>
   )
 }

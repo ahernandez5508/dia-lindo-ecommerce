@@ -4,6 +4,7 @@ import { products } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { UTApi } from 'uploadthing/server'
 
 type State = { error?: string } | null
 
@@ -99,4 +100,11 @@ export async function deleteProduct(formData: FormData) {
   const id = Number(formData.get('id'))
   await db.delete(products).where(eq(products.id, id))
   revalidatePath('/admin/products')
+}
+
+export async function deleteUploadthingFile(url: string): Promise<void> {
+  const key = url.split('/f/').pop()
+  if (!key) return
+  const utapi = new UTApi()
+  await utapi.deleteFiles([key])
 }
