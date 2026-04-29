@@ -1,14 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
-import dynamic from 'next/dynamic'
-import type { ClientUploadedFileData } from 'uploadthing/types'
-
-const UploadDropzone = dynamic(
-  () => import('@/lib/uploadthing').then(m => m.UploadDropzone),
-  { ssr: false, loading: () => <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-sm text-gray-400">Cargando uploader...</div> }
-)
+import { useUploadThing } from '@/lib/uploadthing'
 
 type State = { error?: string } | null
 type Category = { id: number; name: string }
@@ -55,8 +49,25 @@ export default function ProductForm({ action, categories, defaultValues }: Props
     }
   })
 
-  const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const { startUpload, isUploading } = useUploadThing('productImage', {
+    onClientUploadComplete: (res) => {
+      setUrls(prev => [...prev, ...res.map(f => f.url)])
+      setUploadError(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    },
+    onUploadError: (err) => {
+      const msg = err.message?.toLowerCase() ?? ''
+      if (msg.includes('size') || msg.includes('large') || msg.includes('limit')) {
+        setUploadError('La imagen supera el tamaño máximo permitido (16 MB). Reducí el tamaño y volvé a intentarlo.')
+      } else {
+        setUploadError('No se pudo subir la imagen. Intentá de nuevo.')
+      }
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    },
+  })
 
   const removeUrl = (i: number) =>
     setUrls(prev => prev.filter((_, idx) => idx !== i))
@@ -193,26 +204,24 @@ export default function ProductForm({ action, categories, defaultValues }: Props
           </ul>
         )}
 
-        <UploadDropzone
-          endpoint="productImage"
-          onUploadBegin={() => {
-            setUploading(true)
-            setUploadError(null)
-          }}
-          onClientUploadComplete={(res: ClientUploadedFileData<{ url: string; key: string }>[]) => {
-            setUploading(false)
-            setUrls(prev => [...prev, ...res.map((f) => f.url)])
-          }}
-          onUploadError={(err: Error) => {
-            setUploading(false)
-            const msg = err.message?.toLowerCase() ?? ''
-            if (msg.includes('size') || msg.includes('large') || msg.includes('limit')) {
-              setUploadError('La imagen supera el tamaño máximo permitido (16 MB). Reducí el tamaño y volvé a intentarlo.')
-            } else {
-              setUploadError('No se pudo subir la imagen. Intentá de nuevo.')
-            }
-          }}
-        />
+        <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg p-6 cursor-pointer transition ${isUploading ? 'border-gray-300 bg-gray-50 cursor-not-allowed' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}`}>
+          <span className="text-sm text-gray-500">
+            {isUploading ? 'Subiendo...' : 'Hacé clic para seleccionar imágenes'}
+          </span>
+          <span className="text-xs text-gray-400">PNG, JPG, WEBP · máx. 16 MB · hasta 8 imágenes</span>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            disabled={isUploading}
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? [])
+              if (files.length > 0) startUpload(files)
+            }}
+          />
+        </label>
 
         {uploadError && (
           <p className="mt-2 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">{uploadError}</p>
@@ -249,7 +258,7 @@ export default function ProductForm({ action, categories, defaultValues }: Props
 
       <input type="hidden" name="images" value={JSON.stringify(urls)} />
 
-      <SubmitButton disabled={uploading} />
+      <SubmitButton disabled={isUploading} />
     </form>
   )
 }
