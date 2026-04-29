@@ -1,13 +1,27 @@
 import Link from 'next/link'
 import { db } from '@/db'
 import { categories } from '@/db/schema'
+import { like } from 'drizzle-orm'
 import { deleteCategory } from './actions'
 
-export default async function CategoriesPage() {
-  const cats = await db.select().from(categories).orderBy(categories.name)
+export default async function CategoriesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q } = await searchParams
+
+  const cats = await db
+    .select()
+    .from(categories)
+    .where(q ? like(categories.name, `%${q}%`) : undefined)
+    .orderBy(categories.name)
 
   return (
     <div>
+      <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-900 inline-block mb-4">
+        ← Volver al panel
+      </Link>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Categorías</h1>
         <Link
@@ -17,6 +31,30 @@ export default async function CategoriesPage() {
           Nueva categoría
         </Link>
       </div>
+
+      <form method="GET" className="flex gap-3 mb-6">
+        <input
+          type="text"
+          name="q"
+          defaultValue={q ?? ''}
+          placeholder="Buscar por nombre..."
+          className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 flex-1 max-w-xs"
+        />
+        <button
+          type="submit"
+          className="bg-gray-900 text-white rounded px-4 py-2 text-sm font-medium hover:bg-gray-700"
+        >
+          Filtrar
+        </button>
+        {q && (
+          <Link
+            href="/admin/categories"
+            className="border border-gray-300 rounded px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+          >
+            Limpiar
+          </Link>
+        )}
+      </form>
 
       {cats.length === 0 ? (
         <p className="text-gray-500 text-sm">No hay categorías todavía.</p>

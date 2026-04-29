@@ -4,6 +4,7 @@ const sections = [
   { label: 'Productos', href: '/admin/products', description: 'Gestionar catálogo' },
   { label: 'Categorías', href: '/admin/categories', description: 'Organizar productos' },
   { label: 'Pedidos', href: '/admin/orders', description: 'Ver y gestionar pedidos' },
+  { label: 'Usuarios', href: '/admin/users', description: 'Gestionar accesos' },
 ]
 
 export default function AdminDashboard() {

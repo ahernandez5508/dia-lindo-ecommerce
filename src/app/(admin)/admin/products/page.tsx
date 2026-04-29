@@ -1,10 +1,21 @@
 import Link from 'next/link'
 import { db } from '@/db'
 import { products, categories } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, like, and } from 'drizzle-orm'
 import { deleteProduct } from './actions'
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; active?: string }>
+}) {
+  const { q, active } = await searchParams
+
+  const conditions = []
+  if (q) conditions.push(like(products.name, `%${q}%`))
+  if (active === '1') conditions.push(eq(products.active, true))
+  if (active === '0') conditions.push(eq(products.active, false))
+
   const rows = await db
     .select({
       id: products.id,
@@ -17,10 +28,14 @@ export default async function ProductsPage() {
     })
     .from(products)
     .leftJoin(categories, eq(products.categoryId, categories.id))
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(products.name)
 
   return (
     <div>
+      <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-900 inline-block mb-4">
+        ← Volver al panel
+      </Link>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Productos</h1>
         <Link
@@ -30,6 +45,39 @@ export default async function ProductsPage() {
           Nuevo producto
         </Link>
       </div>
+
+      <form method="GET" className="flex gap-3 mb-6">
+        <input
+          type="text"
+          name="q"
+          defaultValue={q ?? ''}
+          placeholder="Buscar por nombre..."
+          className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 flex-1 max-w-xs"
+        />
+        <select
+          name="active"
+          defaultValue={active ?? ''}
+          className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+        >
+          <option value="">Todos</option>
+          <option value="1">Activos</option>
+          <option value="0">Inactivos</option>
+        </select>
+        <button
+          type="submit"
+          className="bg-gray-900 text-white rounded px-4 py-2 text-sm font-medium hover:bg-gray-700"
+        >
+          Filtrar
+        </button>
+        {(q || active) && (
+          <Link
+            href="/admin/products"
+            className="border border-gray-300 rounded px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+          >
+            Limpiar
+          </Link>
+        )}
+      </form>
 
       {rows.length === 0 ? (
         <p className="text-gray-500 text-sm">No hay productos todavía.</p>

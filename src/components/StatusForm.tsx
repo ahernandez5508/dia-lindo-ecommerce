@@ -8,6 +8,7 @@ const STATUS_OPTIONS = [
   { value: 'confirmed', label: 'Confirmado' },
   { value: 'ready', label: 'Listo para retirar' },
   { value: 'delivered', label: 'Entregado' },
+  { value: 'cancelled', label: 'Cancelado' },
 ]
 
 function SubmitButton() {
