@@ -200,12 +200,17 @@ export default function ProductForm({ action, categories, defaultValues }: Props
           }}
           onUploadError={(err: Error) => {
             setUploading(false)
-            setUploadError(err.message ?? 'Error al subir la imagen')
+            const msg = err.message?.toLowerCase() ?? ''
+            if (msg.includes('size') || msg.includes('large') || msg.includes('limit')) {
+              setUploadError('La imagen supera el tamaño máximo permitido (16 MB). Reducí el tamaño y volvé a intentarlo.')
+            } else {
+              setUploadError('No se pudo subir la imagen. Intentá de nuevo.')
+            }
           }}
         />
 
         {uploadError && (
-          <p className="text-red-600 text-xs mt-1">{uploadError}</p>
+          <p className="mt-2 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">{uploadError}</p>
         )}
       </div>
 
