@@ -159,8 +159,8 @@ export default async function HomePage() {
                 ? (() => { try { return JSON.parse(p.images!)[0] } catch { return null } })()
                 : null
               return (
-                <Link key={p.id} href={`/tienda/${p.slug}`} className="group">
-                  <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                <Link key={p.id} href={`/tienda/${p.slug}`} className="group h-full block">
+                  <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
                     <div className="relative aspect-square bg-salmon/20 overflow-hidden">
                       {img ? (
                         <Image
@@ -174,9 +174,9 @@ export default async function HomePage() {
                         <div className="w-full h-full flex items-center justify-center text-carbon/20 text-xs">Sin imagen</div>
                       )}
                     </div>
-                    <div className="p-4">
+                    <div className="p-4 flex flex-col flex-1">
                       <p className="font-display text-base font-semibold text-carbon leading-snug mb-3">{p.name}</p>
-                      <p className="text-xl font-bold text-terracota">${Number(p.price).toLocaleString('es-AR')}</p>
+                      <p className="text-xl font-bold text-terracota mt-auto">${Number(p.price).toLocaleString('es-AR')}</p>
                     </div>
                   </div>
                 </Link>
