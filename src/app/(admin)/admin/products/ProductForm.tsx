@@ -1,7 +1,6 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useActionState } from 'react'
-import { useFormStatus } from 'react-dom'
 import { useUploadThing } from '@/lib/uploadthing'
 import { deleteUploadthingFile } from './actions'
 
@@ -22,18 +21,6 @@ type ProductValues = {
   images: string | null
 }
 
-function SubmitButton({ disabled }: { disabled?: boolean }) {
-  const { pending } = useFormStatus()
-  return (
-    <button
-      type="submit"
-      disabled={pending || disabled}
-      className="bg-gray-900 text-white rounded px-4 py-2 text-sm font-medium hover:bg-gray-700 disabled:opacity-50"
-    >
-      {pending ? 'Guardando...' : 'Guardar'}
-    </button>
-  )
-}
 
 interface Props {
   action: (state: State, formData: FormData) => Promise<State>
@@ -43,6 +30,8 @@ interface Props {
 
 export default function ProductForm({ action, categories, defaultValues }: Props) {
   const [state, formAction] = useActionState(action, null)
+  const formRef = useRef<HTMLFormElement>(null)
+  const hiddenImagesRef = useRef<HTMLInputElement>(null)
 
   const [items, setItems] = useState<ImageItem[]>(() => {
     if (!defaultValues?.images) return []
@@ -60,6 +49,11 @@ export default function ProductForm({ action, categories, defaultValues }: Props
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Resetea submitting cuando la server action devuelve un error (sin redirect)
+  useEffect(() => {
+    if (state?.error) setSubmitting(false)
+  }, [state])
 
   const { startUpload, isUploading } = useUploadThing('productImage', {
     onUploadError: (err) => {
@@ -112,13 +106,10 @@ export default function ProductForm({ action, categories, defaultValues }: Props
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (submitting || isUploading) return
+  const handleSave = async () => {
+    if (!formRef.current || submitting || isUploading) return
     setSubmitting(true)
     setUploadError(null)
-
-    let finalFormData: FormData | null = null
 
     try {
       type PendingItem = Extract<ImageItem, { type: 'pending' }>
@@ -142,16 +133,17 @@ export default function ProductForm({ action, categories, defaultValues }: Props
         return uploadResults[pendingIdx++]?.url ?? null
       }).filter((u): u is string => u !== null)
 
-      finalFormData = new FormData(e.currentTarget)
-      finalFormData.set('images', JSON.stringify(finalUrls))
-    } catch {
-      setUploadError('Error inesperado. Intentá de nuevo.')
-      setSubmitting(false)
-      return
-    }
+      if (hiddenImagesRef.current) {
+        hiddenImagesRef.current.value = JSON.stringify(finalUrls)
+      }
 
-    // Fuera del try-catch: redirect() de Next.js lanza internamente y no debe ser atrapado
-    formAction(finalFormData)
+      // requestSubmit() dispara action={formAction} de forma nativa
+      // Next.js maneja el redirect() correctamente por esta vía
+      formRef.current.requestSubmit()
+    } catch {
+      setUploadError('Error al subir las imágenes. Intentá de nuevo.')
+      setSubmitting(false)
+    }
   }
 
   const displayUrl = (item: ImageItem) =>
@@ -160,7 +152,7 @@ export default function ProductForm({ action, categories, defaultValues }: Props
   const busy = isUploading || submitting
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
+    <form ref={formRef} action={formAction} className="space-y-4 max-w-lg">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
         <input
@@ -331,9 +323,16 @@ export default function ProductForm({ action, categories, defaultValues }: Props
 
       {state?.error && <p className="text-red-600 text-sm">{state.error}</p>}
 
-      <input type="hidden" name="images" value="[]" />
+      <input ref={hiddenImagesRef} type="hidden" name="images" value="[]" />
 
-      <SubmitButton disabled={busy} />
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={busy}
+        className="bg-gray-900 text-white rounded px-4 py-2 text-sm font-medium hover:bg-gray-700 disabled:opacity-50"
+      >
+        {busy ? 'Guardando...' : 'Guardar'}
+      </button>
     </form>
   )
 }
