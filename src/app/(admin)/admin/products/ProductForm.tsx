@@ -2,8 +2,13 @@
 import { useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
+import dynamic from 'next/dynamic'
 import type { ClientUploadedFileData } from 'uploadthing/types'
-import { UploadDropzone } from '@/lib/uploadthing'
+
+const UploadDropzone = dynamic(
+  () => import('@/lib/uploadthing').then(m => m.UploadDropzone),
+  { ssr: false, loading: () => <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-sm text-gray-400">Cargando uploader...</div> }
+)
 
 type State = { error?: string } | null
 type Category = { id: number; name: string }
