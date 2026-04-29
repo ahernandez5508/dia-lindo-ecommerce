@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
+import type { ClientUploadedFileData } from 'uploadthing/types'
+import { UploadDropzone } from '@/lib/uploadthing'
 
 type State = { error?: string } | null
 type Category = { id: number; name: string }
@@ -16,12 +18,12 @@ type ProductValues = {
   images: string | null
 }
 
-function SubmitButton() {
+function SubmitButton({ disabled }: { disabled?: boolean }) {
   const { pending } = useFormStatus()
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       className="bg-gray-900 text-white rounded px-4 py-2 text-sm font-medium hover:bg-gray-700 disabled:opacity-50"
     >
       {pending ? 'Guardando...' : 'Guardar'}
@@ -39,20 +41,38 @@ export default function ProductForm({ action, categories, defaultValues }: Props
   const [state, formAction] = useActionState(action, null)
 
   const [urls, setUrls] = useState<string[]>(() => {
-    if (!defaultValues?.images) return ['']
+    if (!defaultValues?.images) return []
     try {
       const parsed = JSON.parse(defaultValues.images)
-      return Array.isArray(parsed) && parsed.length > 0 ? parsed : ['']
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : []
     } catch {
-      return ['']
+      return []
     }
   })
 
-  const updateUrl = (i: number, value: string) =>
-    setUrls(prev => prev.map((u, idx) => (idx === i ? value : u)))
-  const addUrl = () => setUrls(prev => [...prev, ''])
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+
   const removeUrl = (i: number) =>
-    setUrls(prev => prev.length === 1 ? [''] : prev.filter((_, idx) => idx !== i))
+    setUrls(prev => prev.filter((_, idx) => idx !== i))
+
+  const moveUp = (i: number) => {
+    if (i === 0) return
+    setUrls(prev => {
+      const next = [...prev]
+      ;[next[i - 1], next[i]] = [next[i], next[i - 1]]
+      return next
+    })
+  }
+
+  const moveDown = (i: number) => {
+    setUrls(prev => {
+      if (i === prev.length - 1) return prev
+      const next = [...prev]
+      ;[next[i], next[i + 1]] = [next[i + 1], next[i]]
+      return next
+    })
+  }
 
   return (
     <form action={formAction} className="space-y-4 max-w-lg">
@@ -120,36 +140,73 @@ export default function ProductForm({ action, categories, defaultValues }: Props
 
       <div>
         <label className="block text-sm font-medium text-carbon mb-1">
-          Imágenes (URL)
+          Imágenes
           <span className="text-xs text-carbon/60 ml-1">La primera será la imagen principal</span>
         </label>
-        {urls.map((url, i) => (
-          <div key={i} className="flex gap-2 mb-2">
-            <input
-              type="url"
-              name={`imageUrl_${i}`}
-              value={url}
-              onChange={e => updateUrl(i, e.target.value)}
-              placeholder="https://..."
-              className="flex-1 border border-salmon/30 rounded-lg px-3 py-2 text-sm"
-            />
-            <button
-              type="button"
-              onClick={() => removeUrl(i)}
-              disabled={urls.length === 1}
-              className="px-3 py-2 text-sm border border-salmon/30 rounded-lg disabled:opacity-40 hover:bg-salmon/10 transition"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={addUrl}
-          className="text-sm border border-dashed border-salmon/50 rounded-lg px-4 py-2 hover:bg-salmon/10 transition w-full"
-        >
-          + Agregar imagen
-        </button>
+
+        {urls.length > 0 && (
+          <ul className="space-y-2 mb-3">
+            {urls.map((url, i) => (
+              <li key={url + i} className="flex items-center gap-2 border border-salmon/20 rounded-lg p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt={`Imagen ${i + 1}`}
+                  className="w-14 h-14 object-cover rounded"
+                />
+                <span className="flex-1 text-xs text-gray-500 truncate">{url}</span>
+                <div className="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveUp(i)}
+                    disabled={i === 0}
+                    className="px-2 py-0.5 text-xs border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-30"
+                    aria-label="Mover arriba"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveDown(i)}
+                    disabled={i === urls.length - 1}
+                    className="px-2 py-0.5 text-xs border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-30"
+                    aria-label="Mover abajo"
+                  >
+                    ↓
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeUrl(i)}
+                  className="px-2 py-1 text-sm border border-salmon/30 rounded-lg hover:bg-salmon/10 transition"
+                  aria-label="Quitar imagen"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <UploadDropzone
+          endpoint="productImage"
+          onUploadBegin={() => {
+            setUploading(true)
+            setUploadError(null)
+          }}
+          onClientUploadComplete={(res: ClientUploadedFileData<{ url: string; key: string }>[]) => {
+            setUploading(false)
+            setUrls(prev => [...prev, ...res.map((f) => f.url)])
+          }}
+          onUploadError={(err: Error) => {
+            setUploading(false)
+            setUploadError(err.message ?? 'Error al subir la imagen')
+          }}
+        />
+
+        {uploadError && (
+          <p className="text-red-600 text-xs mt-1">{uploadError}</p>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -179,7 +236,10 @@ export default function ProductForm({ action, categories, defaultValues }: Props
       </div>
 
       {state?.error && <p className="text-red-600 text-sm">{state.error}</p>}
-      <SubmitButton />
+
+      <input type="hidden" name="images" value={JSON.stringify(urls)} />
+
+      <SubmitButton disabled={uploading} />
     </form>
   )
 }

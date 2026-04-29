@@ -18,16 +18,16 @@ function toSlug(name: string) {
     .replace(/^-|-$/g, '')
 }
 
-function readImageUrls(formData: FormData): string[] {
-  return Array.from(formData.entries())
-    .filter(([k]) => /^imageUrl_\d+$/.test(k))
-    .sort(([a], [b]) => {
-      const ia = Number(a.split('_')[1])
-      const ib = Number(b.split('_')[1])
-      return ia - ib
-    })
-    .map(([, v]) => String(v).trim())
-    .filter(Boolean)
+function parseImagesField(formData: FormData): string[] {
+  const raw = formData.get('images')
+  if (typeof raw !== 'string' || raw.length === 0) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((u): u is string => typeof u === 'string' && u.length > 0)
+  } catch {
+    return []
+  }
 }
 
 export async function createProduct(_: State, formData: FormData): Promise<State> {
@@ -38,7 +38,7 @@ export async function createProduct(_: State, formData: FormData): Promise<State
   const categoryId = formData.get('categoryId') as string
   const active = formData.get('active') === 'on'
   const customizable = formData.get('customizable') === 'on'
-  const urls = readImageUrls(formData)
+  const urls = parseImagesField(formData)
 
   if (!name) return { error: 'El nombre es requerido' }
   if (!price || isNaN(Number(price))) return { error: 'El precio es inválido' }
@@ -69,7 +69,7 @@ export async function updateProduct(id: number, _: State, formData: FormData): P
   const categoryId = formData.get('categoryId') as string
   const active = formData.get('active') === 'on'
   const customizable = formData.get('customizable') === 'on'
-  const urls = readImageUrls(formData)
+  const urls = parseImagesField(formData)
 
   if (!name) return { error: 'El nombre es requerido' }
   if (!price || isNaN(Number(price))) return { error: 'El precio es inválido' }
