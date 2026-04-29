@@ -7,7 +7,7 @@ import type { PaymentMethod } from '@/lib/payment-methods'
 import { getMpPreference } from '@/lib/mercadopago'
 import { sendOrderEmail } from '@/lib/order-email'
 
-const VALID_PAYMENT_METHODS: PaymentMethod[] = ['mercadopago', 'transferencia', 'efectivo']
+const VALID_PAYMENT_METHODS: PaymentMethod[] = ['mercadopago', 'transferencia']
 
 type CartItem = { id: number; name: string; price: number; quantity: number }
 type State = { error?: string } | null

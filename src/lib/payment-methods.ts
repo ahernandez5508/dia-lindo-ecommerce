@@ -1,4 +1,4 @@
-export type PaymentMethod = 'mercadopago' | 'transferencia' | 'efectivo'
+export type PaymentMethod = 'mercadopago' | 'transferencia'
 
 export const PAYMENT_METHODS: Record<
   PaymentMethod,
@@ -15,11 +15,5 @@ export const PAYMENT_METHODS: Record<
     short: 'Transferencia',
     instructions:
       'Te enviaremos el CBU/alias por Instagram DM para realizar la transferencia. Mandanos el comprobante una vez realizada.',
-  },
-  efectivo: {
-    label: 'Efectivo',
-    short: 'Efectivo',
-    instructions:
-      'Abonás en efectivo al momento de retirar tu pedido. Coordinamos zona y horario por Instagram DM.',
   },
 }

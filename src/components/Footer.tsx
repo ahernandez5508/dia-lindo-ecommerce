@@ -47,7 +47,7 @@ export default function Footer() {
             <ul className="flex flex-col gap-2">
               <li>
                 <a
-                  href="https://www.instagram.com/dialindo.kitsdefiesta/"
+                  href="https://www.instagram.com/dialindo.papeleria/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-white/50 hover:text-white transition-colors"
@@ -78,7 +78,7 @@ export default function Footer() {
           </p>
           <div className="flex items-center gap-5">
             <a
-              href="https://www.instagram.com/dialindo.kitsdefiesta/"
+              href="https://www.instagram.com/dialindo.papeleria/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/40 hover:text-white transition-colors text-sm"

@@ -5,7 +5,11 @@ interface Props {
 }
 
 export default function PaymentInstructions({ method }: Props) {
-  const { label, instructions } = PAYMENT_METHODS[method]
+  const entry = (PAYMENT_METHODS as Record<string, { label: string; instructions: string }>)[method] ?? {
+    label: method,
+    instructions: 'Coordinaremos los detalles del pago contigo.',
+  }
+  const { label, instructions } = entry
 
   return (
     <div className="w-full max-w-md border border-salmon/40 rounded-xl px-5 py-4 bg-crema/50 text-left">

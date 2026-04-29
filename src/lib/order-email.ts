@@ -25,8 +25,7 @@ export async function sendOrderEmail({
   const paymentCopy: Record<PaymentMethod, string> = {
     mercadopago: 'Tu pago está siendo procesado por MercadoPago.',
     transferencia:
-      'Para completar tu pedido, realizá la transferencia. Te enviamos los datos por Instagram (<a href="https://instagram.com/dialindo.kitsdefiesta">@dialindo.kitsdefiesta</a>).',
-    efectivo: 'Abonás en efectivo al momento del retiro.',
+      'Para completar tu pedido, realizá la transferencia. Te enviamos los datos por Instagram (<a href="https://instagram.com/dialindo.papeleria">@dialindo.papeleria</a>).',
   }
 
   const itemsHtml = cart
@@ -54,7 +53,7 @@ export async function sendOrderEmail({
           </tr>
         </table>
         <div style="background:#F2E8DC;border-radius:8px;padding:16px;margin:20px 0">
-          <p style="margin:0;font-size:14px"><strong>Pago:</strong> ${paymentCopy[order.paymentMethod]}</p>
+          <p style="margin:0;font-size:14px"><strong>Pago:</strong> ${(paymentCopy as Record<string, string>)[order.paymentMethod] ?? 'Coordinaremos los detalles del pago contigo.'}</p>
         </div>
         <div style="text-align:center;margin:28px 0">
           <a href="${trackingUrl}" style="background:#C65A2E;color:#fff;padding:14px 32px;border-radius:40px;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:1px">

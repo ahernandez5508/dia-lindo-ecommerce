@@ -91,8 +91,8 @@ export default async function TiendaPage({
               ? (() => { try { return JSON.parse(p.images!)[0] } catch { return null } })()
               : null
             return (
-              <Link key={p.id} href={`/tienda/${p.slug}`} className="group">
-                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <Link key={p.id} href={`/tienda/${p.slug}`} className="group h-full block">
+                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
                   <div className="relative aspect-square bg-salmon/20 overflow-hidden">
                     {p.customizable && <ProductBadge variant="custom" />}
                     {p.stock === 0 && (
@@ -112,11 +112,11 @@ export default async function TiendaPage({
                       <div className="w-full h-full flex items-center justify-center text-carbon/20 text-xs">Sin imagen</div>
                     )}
                   </div>
-                  <div className="p-4">
+                  <div className="p-4 flex-1 flex flex-col">
                     <p className="font-display text-base font-semibold text-carbon leading-snug mb-3">
                       {p.name}
                     </p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-auto">
                       <p className="text-xl font-bold text-terracota">
                         ${Number(p.price).toLocaleString('es-AR')}
                       </p>

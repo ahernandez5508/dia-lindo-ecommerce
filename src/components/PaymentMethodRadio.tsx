@@ -5,7 +5,6 @@ import { useState } from 'react'
 const CAPTIONS: Record<PaymentMethod, string> = {
   mercadopago: 'link de pago al confirmar',
   transferencia: 'Te contactamos por Instagram con los datos',
-  efectivo: 'al retirar',
 }
 
 const METHODS = Object.keys(PAYMENT_METHODS) as PaymentMethod[]

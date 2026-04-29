@@ -3,7 +3,7 @@ import { db } from '@/db'
 import { products, categories } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import AddToCart from '@/components/AddToCart'
-import InstagramCTA from '@/components/InstagramCTA'
+import WhatsAppCTA from '@/components/WhatsAppCTA'
 import ProductGallery from '@/components/ProductGallery'
 import type { Metadata } from 'next'
 
@@ -68,13 +68,13 @@ export default async function ProductPage({
             ${price.toLocaleString('es-AR')}
           </p>
           {row.description && (
-            <p className="text-sm text-carbon/70 leading-relaxed">{row.description}</p>
+            <p className="text-sm text-carbon/70 leading-relaxed whitespace-pre-wrap">{row.description}</p>
           )}
           <p className="text-xs text-carbon/40">
             {row.stock > 0 ? `${row.stock} disponibles` : 'Sin stock'}
           </p>
           {row.customizable ? (
-            <InstagramCTA productName={row.name} />
+            <WhatsAppCTA productName={row.name} />
           ) : row.stock > 0 ? (
             <AddToCart product={{ id: row.id, name: row.name, price, image: imgs[0] }} />
           ) : (
