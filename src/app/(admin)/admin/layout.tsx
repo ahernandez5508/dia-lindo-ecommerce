@@ -1,4 +1,4 @@
-import { auth } from '@/auth'
+import { auth, signOut } from '@/auth'
 import { redirect } from 'next/navigation'
 
 export default async function AdminLayout({
@@ -23,7 +23,17 @@ export default async function AdminLayout({
             Ver sitio →
           </a>
         </div>
-        <span className="text-sm text-gray-500">{session?.user?.email}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">{session?.user?.email}</span>
+          <form action={async () => {
+            'use server'
+            await signOut({ redirectTo: '/admin/login' })
+          }}>
+            <button type="submit" className="text-sm text-gray-400 hover:text-red-500 transition-colors">
+              Cerrar sesión
+            </button>
+          </form>
+        </div>
       </nav>
       <main className="max-w-6xl mx-auto px-6 py-8">{children}</main>
     </div>

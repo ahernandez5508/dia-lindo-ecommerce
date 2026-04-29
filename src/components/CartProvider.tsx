@@ -9,6 +9,21 @@ export type CartItem = {
   image?: string
 }
 
+const CART_KEY = 'dl-cart'
+const CART_TTL_MS = 7_200_000
+
+type StoredCart = { items: CartItem[]; lastActivity: number }
+
+function isStoredCart(v: unknown): v is StoredCart {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    !Array.isArray(v) &&
+    Array.isArray((v as StoredCart).items) &&
+    typeof (v as StoredCart).lastActivity === 'number'
+  )
+}
+
 type CartCtx = {
   items: CartItem[]
   addItem: (item: Omit<CartItem, 'quantity'>) => void
@@ -26,13 +41,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem('dl-cart')
-    if (stored) setItems(JSON.parse(stored))
+    const stored = localStorage.getItem(CART_KEY)
+    if (stored) {
+      try {
+        const parsed: unknown = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          localStorage.removeItem(CART_KEY)
+        } else if (isStoredCart(parsed)) {
+          if (Date.now() - parsed.lastActivity > CART_TTL_MS) {
+            localStorage.removeItem(CART_KEY)
+          } else {
+            setItems(parsed.items)
+          }
+        } else {
+          localStorage.removeItem(CART_KEY)
+        }
+      } catch {
+        localStorage.removeItem(CART_KEY)
+      }
+    }
     setHydrated(true)
   }, [])
 
   useEffect(() => {
-    if (hydrated) localStorage.setItem('dl-cart', JSON.stringify(items))
+    if (hydrated) localStorage.setItem(CART_KEY, JSON.stringify({ items, lastActivity: Date.now() }))
   }, [items, hydrated])
 
   const addItem = (item: Omit<CartItem, 'quantity'>) =>

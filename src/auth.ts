@@ -8,7 +8,7 @@ import { authConfig } from './auth.config'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt', maxAge: 86400, updateAge: 0 },
   providers: [
     Credentials({
       credentials: {
