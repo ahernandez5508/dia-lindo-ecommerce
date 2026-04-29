@@ -48,7 +48,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (Array.isArray(parsed)) {
           localStorage.removeItem(CART_KEY)
         } else if (isStoredCart(parsed)) {
-          if (Date.now() - parsed.lastActivity > CART_TTL_MS) {
+          if (Date.now() - parsed.lastActivity >= CART_TTL_MS) {
             localStorage.removeItem(CART_KEY)
           } else {
             setItems(parsed.items)
