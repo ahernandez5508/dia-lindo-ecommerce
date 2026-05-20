@@ -7,7 +7,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js_15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
  
-
+</div>
 
  
 ## 📖 Sobre el proyecto
@@ -61,4 +61,4 @@ Este proyecto fue desarrollado mediante **orquestación de agentes de IA especia
 | Orquestación general | Claude Sonnet |
  
 **Engram** se encargó de mantener la memoria persistente del proyecto, evitando la pérdida de contexto durante el desarrollo y reduciendo alucinaciones en flujos de larga duración.
-</div>
+
