@@ -7,8 +7,8 @@
 [![Next.js](https://img.shields.io/badge/Next.js_15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
  
-</div>
----
+
+
  
 ## 📖 Sobre el proyecto
  
@@ -16,7 +16,7 @@
  
 > 🤖 **Proyecto de orquestación multi-agente:** Este proyecto fue construido utilizando **Gentle-AI** + **Engram** para coordinar múltiples agentes de IA especializados (Claude Sonnet/Opus, Gemini, GPT-4) a lo largo de todo el ciclo de desarrollo — desde el análisis y diseño hasta la codificación, testing e implementación.
  
----
+
  
 ## ✨ Funcionalidades
  
@@ -29,7 +29,7 @@
 - 📧 **Notificaciones por email** vía Resend
 - 🖼️ **Carga de imágenes** con Uploadthing
 - 🔐 **Autenticación** con NextAuth v5
----
+
  
 ## 🛠️ Stack Tecnológico
  
@@ -46,7 +46,7 @@
 | **Imágenes** | Uploadthing |
 | **Orquestación IA** | Gentle-AI + Engram |
  
----
+
  
 ## 🤖 Arquitectura de IA
  
@@ -61,3 +61,4 @@ Este proyecto fue desarrollado mediante **orquestación de agentes de IA especia
 | Orquestación general | Claude Sonnet |
  
 **Engram** se encargó de mantener la memoria persistente del proyecto, evitando la pérdida de contexto durante el desarrollo y reduciendo alucinaciones en flujos de larga duración.
+</div>
